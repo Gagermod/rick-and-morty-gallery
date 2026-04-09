@@ -13,16 +13,31 @@
     "no-unused-vars": ["warn", { "vars": "all", "args": "after-used" }],
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "import/no-unused-modules": ["warn", { "unusedExports": true }],
+    "import/no-duplicates": ["error", { "prefer-inline": true }],
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "error",
     "react/no-array-index-key": "warn",
-    "react/jsx-no-bind": ["warn", { "ignoreRefs": true }], 
+    "react/jsx-no-bind": ["warn", { "ignoreRefs": true }],
     "padding-line-between-statements": [
       "error",
       { "blankLine": "always", "prev": "*", "next": "return" },
       { "blankLine": "always", "prev": "*", "next": "export" },
       { "blankLine": "any", "prev": "export", "next": "export" }
-    ]
+    ],
+    "import/order": ["error", {
+      "groups": [
+        "builtin",
+        "external",
+        "internal",
+        "parent",
+        "sibling",
+        "index",
+        "object",
+        "type"
+      ],
+      "newlines-between": "never",
+      "alphabetize": { "order": "asc", "caseInsensitive": true }
+    }]
   },
   "settings": {
     "react": {

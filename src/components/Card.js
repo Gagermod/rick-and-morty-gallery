@@ -1,10 +1,9 @@
+import { useCallback } from 'react';
 import styled from 'styled-components';
-import { ReactComponent as Male } from '../assets/genders/male.svg';
-import { ReactComponent as Female } from '../assets/genders/female.svg';
-import { ReactComponent as Genderless } from '../assets/genders/genderless.svg';
+import { getGenderIcon, getStatusColor } from '../utils/characterUtils';
 
-// TODO: Refactor the Card component
 export function Card({
+  id,
   status,
   name,
   species,
@@ -13,96 +12,33 @@ export function Card({
   image,
   onClickHandler
 }) {
+  const genderIcon = getGenderIcon(gender);
+  const statusColor = getStatusColor(status);
+
+  const handleClick = useCallback(() => {
+    onClickHandler(id);
+  }, [onClickHandler, id]);
+
   return (
-    <StyledCard onClick={onClickHandler}>
+    <StyledCard onClick={handleClick}>
       <CardImg src={image} alt={name} />
 
       <CardInfo>
-        <CardTitle name={name} gender={gender} />
+        <CardTitleContainer>
+          <StyledCardTitle className="card-title">{name}</StyledCardTitle>
+          <IconContainer>{genderIcon}</IconContainer>
+        </CardTitleContainer>
 
-        <CardStatus status={status} species={species} type={type} />
+        <CardStatusContainer>
+          <StyledCardStatus $color={statusColor}>{status}</StyledCardStatus>
+          &nbsp;-&nbsp;
+          <CardSpecies>{species}</CardSpecies>
+          {type && <CardType>{type}</CardType>}
+        </CardStatusContainer>
       </CardInfo>
     </StyledCard>
   );
 }
-
-export function CardTitle({ name, gender, className }) {
-  const Icon = (() => {
-    if (gender === 'Male') {
-      return <Male width={20} height={20} fill="#33b3c8" title="Male" />;
-    }
-
-    if (gender === 'Female') {
-      return <Female width={24} height={24} fill="pink" title="Female" />;
-    }
-
-    if (gender === 'unknown' || gender === 'Genderless') {
-      return (
-        <Genderless width={24} height={24} fill="#999" title="Genderless" />
-      );
-    }
-
-    return null;
-  })();
-
-  return (
-    <CardTitleContainer className={className}>
-      <StyledCardTitle className="card-title">{name}</StyledCardTitle>
-
-      <IconContainer>{Icon}</IconContainer>
-    </CardTitleContainer>
-  );
-}
-
-export function CardStatus({ status, species, type, className }) {
-  return (
-    <CardStatusContainer className={className}>
-      <StyledCardStatus status={status}>{status}</StyledCardStatus>
-      &nbsp;-&nbsp;
-      <CardSpecies>{species}</CardSpecies>
-      {type && <CardType>{type}</CardType>}
-    </CardStatusContainer>
-  );
-}
-
-const CardStatusContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-`;
-
-const StyledCardStatus = styled.span`
-  display: flex;
-  align-items: center;
-  text-transform: capitalize;
-
-  &::before {
-    content: '';
-    display: block;
-    margin-right: 8px;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background-color: ${({ status }) => {
-      switch (status) {
-        case 'Alive':
-          return '#83bf46';
-        case 'Dead':
-          return '#ff5152';
-        default:
-          return '#968c9d';
-      }
-    }};
-  }
-`;
-
-const CardSpecies = styled.span``;
-
-const CardType = styled.p`
-  margin-top: 20px;
-  width: 100%;
-  color: #ddd;
-  font-size: 16px;
-`;
 
 const StyledCard = styled.div`
   display: flex;
@@ -135,10 +71,6 @@ const CardInfo = styled.div`
   padding: 20px;
 `;
 
-const IconContainer = styled.div`
-  display: flex;
-`;
-
 const CardTitleContainer = styled.div`
   display: flex;
   align-items: center;
@@ -158,4 +90,38 @@ const StyledCardTitle = styled.h2`
     max-width: 130px;
     font-size: 18px;
   }
+`;
+
+const IconContainer = styled.div`
+  display: flex;
+`;
+
+const CardStatusContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+`;
+
+const StyledCardStatus = styled.span`
+  display: flex;
+  align-items: center;
+  text-transform: capitalize;
+
+  &::before {
+    content: '';
+    display: block;
+    margin-right: 8px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background-color: ${({ $color }) => $color};
+  }
+`;
+
+const CardSpecies = styled.span``;
+
+const CardType = styled.p`
+  margin-top: 20px;
+  width: 100%;
+  color: #ddd;
+  font-size: 16px;
 `;

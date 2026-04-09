@@ -1,6 +1,6 @@
+import axios from 'axios';
 import { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
-import axios from 'axios';
 import { Loader, Text } from '../common';
 
 const API_EPISODES_URL = 'https://rickandmortyapi.com/api/episode';
@@ -11,6 +11,9 @@ export function PopupEpisodes({ episodes }) {
 
   useEffect(() => {
     if (!episodes?.length) {
+      setSeries([]);
+      setIsFetching(false);
+
       return;
     }
 
@@ -26,6 +29,13 @@ export function PopupEpisodes({ episodes }) {
         } else {
           setSeries(data);
         }
+      })
+      .catch((error) => {
+        console.error('Failed to fetch :', error);
+        setSeries([]);
+      })
+      .finally(() => {
+        setIsFetching(false);
       });
   }, [episodes]);
 
@@ -37,9 +47,9 @@ export function PopupEpisodes({ episodes }) {
     <PopupEpisodesContainer>
       <Text>Participated in episodes:</Text>
 
-      <StyledPopupEpisodes _length={series.length}>
+      <StyledPopupEpisodes $_length={series.length}>
         {series?.map(({ id, name, episode }) => (
-          <Episode key={id} _length={series.length}>
+          <Episode key={id}>
             <EpisodeMarking>
               {episode
                 .replace(/S0?(\d+)/, 'Season $1 - ')
@@ -59,14 +69,14 @@ const StyledPopupEpisodes = styled.div`
   display: flex;
   flex-direction: column;
 
-  ${({ _length }) =>
-    _length > 20 &&
+  ${({ $_length }) =>
+    $_length > 20 &&
     css`
       display: grid;
       grid-auto-flow: column;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: repeat(
-        ${window.screen.width < 600 ? _length : Math.ceil(_length / 2)},
+        ${({ $_length }) => Math.ceil($_length / 2)},
         1fr
       );
 
@@ -76,11 +86,14 @@ const StyledPopupEpisodes = styled.div`
       }
 
       & span {
-        margin-bottom: ${window.screen.width < 600 ? '10px' : 0};
+        margin-bottom: 0;
       }
     `};
 
-  ${window.screen.width < 600 && 'grid-template-columns: 1fr'};
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(${({ $_length }) => $_length}, 1fr);
+  }
 `;
 
 const Episode = styled.p`

@@ -1,58 +1,69 @@
 import axios from 'axios';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
 
-const API_URL = 'https://rickandmortyapi.com/api/character/';
+const API_BASE_URL = 'https://rickandmortyapi.com/api/character/';
 
-export function DataProvider({ children }) {
-  const [activePage, setActivePage] = useState(0);
+const DataContext = createContext({});
+
+export function DataProvider({ children, filters }) {
   const [characters, setCharacters] = useState([]);
   const [isFetching, setIsFetching] = useState(false);
   const [isError, setIsError] = useState(false);
   const [info, setInfo] = useState({});
-  const [apiURL, setApiURL] = useState(API_URL);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const fetchData = async (url) => {
+  const fetchData = useCallback(async () => {
     setIsFetching(true);
     setIsError(false);
 
-    axios
-      .get(url)
-      .then(({ data }) => {
-        setIsFetching(false);
-        setCharacters(data.results);
-        setInfo(data.info);
-      })
-      .catch((e) => {
-        setIsFetching(false);
-        setIsError(true);
-        console.error(e);
-      });
-  };
+    const params = new URLSearchParams();
+    if (filters.name) params.append('name', filters.name);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.gender) params.append('gender', filters.gender);
+    if (filters.species) params.append('species', filters.species);
+    if (filters.type) params.append('type', filters.type);
+    params.append('page', currentPage);
+
+    const url = `${API_BASE_URL}?${params}`;
+
+    try {
+      const { data } = await axios.get(url);
+      setCharacters(data.results);
+      setInfo(data.info);
+    } catch (error) {
+      setIsError(true);
+      console.error(error);
+    } finally {
+      setIsFetching(false);
+    }
+  }, [filters, currentPage]);
 
   useEffect(() => {
-    fetchData(apiURL);
-  }, [apiURL]);
+    fetchData();
+  }, [fetchData]);
 
   const dataValue = useMemo(
     () => ({
-      activePage,
-      setActivePage,
-      apiURL,
-      setApiURL,
       characters,
-      fetchData,
       isFetching,
       isError,
-      info
+      info,
+      currentPage,
+      setCurrentPage
     }),
-    [activePage, apiURL, characters, isFetching, isError, info, fetchData]
+    [characters, isFetching, isError, info, currentPage]
   );
 
   return (
     <DataContext.Provider value={dataValue}>{children}</DataContext.Provider>
   );
 }
-
-const DataContext = createContext({});
 
 export const useData = () => useContext(DataContext);

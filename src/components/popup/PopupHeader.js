@@ -1,33 +1,30 @@
 import styled from 'styled-components';
-import { CardStatus, CardTitle } from '../Card';
+import { getGenderIcon, getStatusColor } from '../../utils/characterUtils';
 
 export function PopupHeader({ image, name, gender, status, species, type }) {
+  const genderIcon = getGenderIcon(gender);
+  const statusColor = getStatusColor(status);
+
   return (
     <PopupHeaderContainer>
       <PopupImage src={image?.replace('../', '')} alt={name} />
-      <PopupTitle name={name} gender={gender} />
-      <PopupStatus status={status} species={species} type={type} />
+
+      <PopupTitle>
+        {name} {genderIcon}
+      </PopupTitle>
+
+      <PopupStatus>
+        <StatusLine>
+          <StatusDot $color={statusColor} />
+          {status} - {species}
+        </StatusLine>
+        {type && <PopupType>{type}</PopupType>}
+      </PopupStatus>
     </PopupHeaderContainer>
   );
 }
 
 const PopupHeaderContainer = styled.div``;
-
-const PopupTitle = styled(CardTitle)`
-  font-size: 22px;
-  margin-top: 30px;
-  justify-content: center;
-`;
-
-const PopupStatus = styled(CardStatus)`
-  font-size: 20px;
-  justify-content: center;
-
-  & p {
-    text-align: center;
-    margin-top: 10px;
-  }
-`;
 
 const PopupImage = styled.img`
   display: block;
@@ -38,4 +35,41 @@ const PopupImage = styled.img`
   height: 100%;
   max-width: 350px;
   max-height: 350px;
+`;
+
+const PopupTitle = styled.h2`
+  font-size: 22px;
+  margin-top: 30px;
+  text-align: center;
+`;
+
+const PopupStatus = styled.div`
+  font-size: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+`;
+
+const StatusLine = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+`;
+
+const StatusDot = styled.span`
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: ${({ $color }) => $color};
+`;
+
+const PopupType = styled.p`
+  margin-top: 10px;
+  font-size: 16px;
+  color: #ddd;
 `;

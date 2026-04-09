@@ -1,23 +1,88 @@
+import { useCallback, useState } from 'react';
 import styled from 'styled-components';
-import { Pagination, ItemsGrid, useData, Header, AppState } from './components';
+import {
+  Pagination,
+  ItemsGrid,
+  Header,
+  AppState,
+  DataProvider,
+  useData
+} from './components';
+import { useUrlFilters } from './hooks/useUrlFilters';
 
-export default function App() {
-  const { isFetching, isError } = useData();
+function AppContent({ onApply, onReset }) {
+  const { characters, isFetching, isError, setCurrentPage } = useData();
+  const { getFiltersFromUrl } = useUrlFilters();
+  const [formFilters, setFormFilters] = useState(getFiltersFromUrl());
+
+  const handleApply = useCallback(() => {
+    onApply(formFilters);
+    setCurrentPage(1);
+  }, [onApply, formFilters, setCurrentPage]);
+
+  const handleReset = useCallback(() => {
+    const emptyFilters = {
+      name: '',
+      status: '',
+      gender: '',
+      species: '',
+      type: ''
+    };
+    setFormFilters(emptyFilters);
+    onReset();
+    setCurrentPage(1);
+  }, [onReset, setCurrentPage]);
 
   return (
     <Main>
-      <Header />
+      <Header
+        filters={formFilters}
+        setFilters={setFormFilters}
+        onApply={handleApply}
+        onReset={handleReset}
+      />
 
       <AppState />
 
       {!isFetching && !isError && (
         <>
-          <ItemsGrid />
+          <ItemsGrid characters={characters} />
 
           <Pagination />
         </>
       )}
     </Main>
+  );
+}
+
+export function App() {
+  const { getFiltersFromUrl, updateUrl, resetUrl } = useUrlFilters();
+  const [activeFilters, setActiveFilters] = useState(getFiltersFromUrl());
+
+  const handleApply = useCallback(
+    (newFilters) => {
+      setActiveFilters(newFilters);
+      updateUrl(newFilters);
+    },
+    [updateUrl]
+  );
+
+  const handleReset = useCallback(() => {
+    const emptyFilters = {
+      name: '',
+      status: '',
+      gender: '',
+      species: '',
+      type: ''
+    };
+    setActiveFilters(emptyFilters);
+    resetUrl();
+  }, [resetUrl]);
+
+  return (
+    <DataProvider filters={activeFilters}>
+      <AppContent onApply={handleApply} onReset={handleReset} />
+    </DataProvider>
   );
 }
 
